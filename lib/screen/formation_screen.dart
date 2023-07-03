@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:formation_app/screen/api.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:formation_app/screen/document_mobile.dart';
+import 'package:formation_app/screen/home_page.dart';
 import 'package:formation_app/screen/reader_screen.dart';
 import 'dart:convert';
 
@@ -16,25 +17,6 @@ class FormationScreen extends StatefulWidget {
 }
 
 class _FormationScreenState extends State<FormationScreen> {
-  // List<Formation> formations = [];
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   fetchFormations();
-  // }
-
-  // Future<void> fetchFormations() async {
-  //   var res = await CallApi().getData('formation');
-
-  //   var body = json.decode(res.body);
-  //   print(res.body);
-  //   formations =
-  //       body.map((formationJson) => Formation.fromJson(formationJson)).toList();
-  //   print(formations);
-  //   setState(() {});
-  // }
-
   void openPdf(BuildContext context, String pdfPath) {
     Navigator.push(
       context,
@@ -49,104 +31,170 @@ class _FormationScreenState extends State<FormationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.blueDarkColor,
-        title: const Text('Mes Formations',
-            style: TextStyle(color: AppColors.backColor)),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(80),
+        child: AppBar(
+          backgroundColor: AppColors.blueDarkColor,
+          title: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+              );
+            },
+            child: Text(
+              "Formation",
+              style: TextStyle(color: AppColors.backColor),
+            ),
+          ),
+        ),
       ),
-      // body: ListView.builder(
-      //   itemCount: formations.length,
-      //   itemBuilder: (context, index) {
-      //     final formation = formations[index];
-      //     return Card(
-      //       child: ListTile(
-      //         leading: Image.network(
-      //           formation.imageUrl,
-      //           width: 80,
-      //           height: 80,
-      //           fit: BoxFit.cover,
-      //         ),
-      //         title: Text(formation.title),
-      //         subtitle: Text(formation.time),
-      //         onTap: () {
-      //           openPdf(context, formation.pdfPath);
-      //         },
-      //       ),
-      //     );
-      //   },
-      // ),
-
-      body: Padding(
-          padding: EdgeInsets.symmetric(vertical: 18.0, horizontal: 16.6),
-          child: SingleChildScrollView(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Liste Formation",
-                    style: GoogleFonts.roboto(
-                        fontSize: 28.0, fontWeight: FontWeight.bold),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 16.6),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 40,
+              ),
+              Center(
+                child: Text(
+                  "NOS FORMATIONS",
+                  style: GoogleFonts.roboto(
+                    fontSize: 36.0,
+                    fontWeight: FontWeight.bold,
                   ),
-                  Column(
+                ),
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              //wrap the whole body in a scroller
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
                     children: Document.doc_list
-                        .map((doc) => ListTile(
+                        .map((doc) => _buildBlock(
                               onTap: () {
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            ReaderScreen(doc)));
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ReaderScreen(doc),
+                                  ),
+                                );
                               },
-                              title: Text(
-                                doc.doc_title!,
-                                style: GoogleFonts.nunito(),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle:  Text(doc.doc_description!),
-                              trailing: 
-                              
-                              Text(
-                               
-                                "${doc.page_num} heures",
-                                style: GoogleFonts.nunito(
-                                    color: AppColors.blueDarkColor),
-                              ),
-                              leading: const Icon(
-                                Icons.picture_as_pdf,
-                                color: Colors.red,
-                              ),
+                              doc,
+                              constraints,
                             ))
                         .toList(),
-                  )
-                ]),
-          )),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBlock(Document doc, BoxConstraints constraints,
+      {required Null Function() onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 50),
+        child: Stack(
+          children: [
+            Container(
+              width: 850,
+              height: 276,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
+                ),
+                child: Image.asset(
+                  doc.doc_image!,
+                  fit: BoxFit.cover,
+                  height: 172,
+                  width: 82,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 490,
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: AppColors.homeColor.withOpacity(0.8),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      doc.doc_title!,
+                      textAlign: TextAlign.left,
+                      style: GoogleFonts.nunito(
+                        fontSize: 36.0,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.backColor,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      doc.doc_description!,
+                      style: GoogleFonts.nunito(
+                        fontSize: 22.0,
+                        color: AppColors.backColor,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.schedule,
+                          color: AppColors.backColor,
+                        ),
+                        SizedBox(width: 8.0),
+                        Text(
+                          "${doc.page_num} heures",
+                          textAlign: TextAlign.left,
+                          style: GoogleFonts.nunito(
+                            fontSize: 26.0,
+                            color: AppColors.backColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
-
-// class Formation {
-//   final String title;
-//   final String imageUrl;
-//   final String description;
-//   final String time;
-//   final String pdfPath;
-
-//   Formation({
-//     required this.title,
-//     required this.imageUrl,
-//     required this.description,
-//     required this.time,
-//     required this.pdfPath,
-//   });
-
-//   factory Formation.fromJson(Map<String, dynamic> json) {
-//     return Formation(
-//       title: json['title'],
-//       imageUrl: json['imageUrl'],
-//       description: json['description'],
-//       time: json['time'],
-//       pdfPath: json['pdfPath'],
-//     );
-//   }
-// }
